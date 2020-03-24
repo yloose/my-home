@@ -1,0 +1,7 @@
+{
+  "name": "MyHome",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
