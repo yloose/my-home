@@ -1,3 +1,67 @@
 ion-content ion-toolbar {
   --background: translucent;
 }
+
+ion-card-header {
+  padding-bottom: 0;
+}
+
+#addIcon {
+  fill: var(--ion-color-tertiary);
+}
+
+.ledSettingsWrapper {
+  line-height: 50%;
+}
+
+.descSpan {
+  opacity: 0.8 !important;
+  font-size: 1.2rem !important;
+}
+
+.hr {
+  opacity: .6;
+  padding: 0;
+  border-bottom: 1px solid #ccc;
+  margin: 10px 10px 0 10px;
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.toggleLEDActive {
+  float: right;
+  transform: translateY(-10%);
+}
+
+.widgetContainer {
+  width: 100%;
+}
+
+:root {
+  --color-preview-height: 2em;
+}
+
+.color {
+  color: rgba(0, 0, 0, 0.5);
+  display: inline-block;
+  width: 30%;
+  height: var(--color-preview-height);
+  line-height: var(--color-preview-height);
+  border-radius: 7px;
+  text-align: center;
+  margin-left: 5%;
+}
+
+.effectSelector {
+  width: 80%;
+  float: right;
+  transform: translateY(-40%);
+  font-size: 1.3em;
+  line-height: normal;
+}
+
+.brightnessSlider {
+  padding: 0 14px 0 0;
+  transform: translateY(-15%);
+}

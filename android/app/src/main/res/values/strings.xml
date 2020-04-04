@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">my-home</string>
+    <string name="title_activity_main">My Home</string>
+    <string name="package_name">de.yloose.myhome</string>
+    <string name="custom_url_scheme">de.yloose.myhome</string>
+</resources>
