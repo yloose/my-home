@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 
 import { controllerIFace } from "./interfaces";
@@ -12,10 +11,10 @@ class LEDController extends Component<{
   ControllerToast: Function;
   SyncDoneToast: Function;
 }> {
-  async pullSupportedControllerEffects() {
+  pullSupportedControllerEffects() {
     Promise.all(
-      this.state.LedController.map(async elem => {
-        if (elem) {
+      this.state.LedController.map(async (elem: controllerIFace) => {
+        if (elem !== null) {
           const res = await axios.get(
             "http://" + elem.ip + ":" + elem.port + "/json/effects"
           );
@@ -33,8 +32,10 @@ class LEDController extends Component<{
     DataInterface.getController().then(controller => {
       if (controller) {
         this.setState({ LedController: controller }, () => {
-          this.pullSupportedControllerEffects();
-          this.pullForAll();
+          if (controller.length !== 0) {
+            this.pullSupportedControllerEffects();
+            this.pullForAll();
+          }
         });
       }
     });
@@ -42,26 +43,25 @@ class LEDController extends Component<{
 
   constructor(props: any) {
     super(props);
-    DataInterface.setController(this.state.LedController)
-    // this.updateControllerFromDB();
+    this.updateControllerFromDB();
   }
 
   state = {
     LedController: [
-      {
-        uuid: uuidv4(),
-        ip: "192.168.2.191",
-        port: 2223,
-        name: "Desk",
-        ledState: {
-          isOn: false,
-          pColor: [100, 100, 100],
-          sColor: [255, 0, 0],
-          brightness: 50,
-          effect: 0
-        },
-        effects: []
-      }
+      // {
+      //   uuid: uuidv4(),
+      //   ip: "192.168.2.191",
+      //   port: 2223,
+      //   name: "Desk",
+      //   ledState: {
+      //     isOn: false,
+      //     pColor: [100, 100, 100],
+      //     sColor: [255, 0, 0],
+      //     brightness: 50,
+      //     effect: 0
+      //   },
+      //   effects: []
+      // }
       // {
       //   uuid: uuidv4(),
       //   ip: "192.168.2.191",
@@ -95,7 +95,7 @@ class LEDController extends Component<{
 
   async pullData(controllerUUID: String) {
     Promise.all(
-      this.state.LedController.map(async elem => {
+      this.state.LedController.map(async (elem: controllerIFace) => {
         if (elem.uuid === controllerUUID) {
           const res = await axios.get(
             "http://" + elem.ip + ":" + elem.port + "/json/state"
@@ -119,7 +119,7 @@ class LEDController extends Component<{
 
   pullForAll() {
     Promise.all(
-      this.state.LedController.map(async elem => {
+      this.state.LedController.map(async (elem: controllerIFace) => {
         await this.pullData(elem.uuid);
       })
     ).then(() => this.props.SyncDoneToast(true));
@@ -136,24 +136,26 @@ class LEDController extends Component<{
     }
   ) {
     let { isOn, pColor, sColor, brightness, effect } = data;
-    let updated = this.state.LedController.map(async elem => {
-      if (elem.uuid === controllerUUID) {
-        elem.ledState.isOn =
-          typeof isOn !== "undefined" ? isOn : elem.ledState.isOn;
-        elem.ledState.brightness =
-          typeof brightness !== "undefined"
-            ? brightness
-            : elem.ledState.brightness;
-        elem.ledState.pColor =
-          typeof pColor !== "undefined" ? pColor : elem.ledState.pColor;
-        elem.ledState.sColor =
-          typeof sColor !== "undefined" ? sColor : elem.ledState.sColor;
-        elem.ledState.effect =
-          typeof effect !== "undefined" ? effect : elem.ledState.effect;
-      } else {
-        return elem;
+    let updated = this.state.LedController.map(
+      async (elem: controllerIFace) => {
+        if (elem.uuid === controllerUUID) {
+          elem.ledState.isOn =
+            typeof isOn !== "undefined" ? isOn : elem.ledState.isOn;
+          elem.ledState.brightness =
+            typeof brightness !== "undefined"
+              ? brightness
+              : elem.ledState.brightness;
+          elem.ledState.pColor =
+            typeof pColor !== "undefined" ? pColor : elem.ledState.pColor;
+          elem.ledState.sColor =
+            typeof sColor !== "undefined" ? sColor : elem.ledState.sColor;
+          elem.ledState.effect =
+            typeof effect !== "undefined" ? effect : elem.ledState.effect;
+        } else {
+          return elem;
+        }
       }
-    });
+    );
     this.setState(
       {
         LEDController: updated
@@ -164,28 +166,31 @@ class LEDController extends Component<{
     );
   }
 
+  async makeUpdateStateRequest(controller: controllerIFace) {
+    await axios.post(
+      "http://" + controller.ip + ":" + controller.port + "/json/state",
+      {
+        on: controller.ledState.isOn,
+        bri: controller.ledState.brightness,
+        seg: [
+          {
+            fx: controller.ledState.effect,
+            col: [controller.ledState.pColor, controller.ledState.sColor]
+          }
+        ]
+      },
+      { headers: { "Content-Type": "application/json" } }
+    );
+  }
+
   async updateState(controllerUUID: String) {
     const controller:
       | controllerIFace
       | undefined = this.state.LedController.find(
-      elem => elem.uuid === controllerUUID
+      (elem: controllerIFace) => elem.uuid === controllerUUID
     );
     if (controller) {
-      await axios
-        .post(
-          "http://" + controller.ip + ":" + controller.port + "/json/state",
-          {
-            on: controller.ledState.isOn,
-            bri: controller.ledState.brightness,
-            seg: [
-              {
-                fx: controller.ledState.effect,
-                col: [controller.ledState.pColor, controller.ledState.sColor]
-              }
-            ]
-          },
-          { headers: { "Content-Type": "application/json" } }
-        )
+      this.makeUpdateStateRequest(controller)
         .then(() => {
           return true;
         })
@@ -197,24 +202,43 @@ class LEDController extends Component<{
     }
   }
 
+  deleteController(uuid: string) {
+    DataInterface.deleteController(uuid).then(() => {
+      let controllerNew = this.state.LedController.filter(
+        (controller: controllerIFace) => controller.uuid !== uuid
+      );
+      this.setState({ LedController: controllerNew });
+    });
+  }
+
   testbool = true;
   testfunc() {
     // if (this.testbool) {
-      this.testbool = false;
+    this.testbool = false;
 
-      console.log(this.state.LedController);
+    console.log(this.state.LedController);
     // }
   }
 
   render() {
     // this.testfunc();
-    return this.state.LedController.map(controller => (
-      <LEDWidget
-        pushData={this.pushData.bind(this)}
-        uuid={controller.uuid}
-        controller={controller}
-      />
-    ));
+    return this.state.LedController.length !== 0 ? (
+      this.state.LedController.map(
+        (controller: controllerIFace, index: number) => (
+          <LEDWidget
+            key={index}
+            pushData={this.pushData.bind(this)}
+            uuid={controller.uuid}
+            controller={controller}
+            deleteController={() => {
+              this.deleteController(controller.uuid);
+            }}
+          />
+        )
+      )
+    ) : (
+      <span id="addControllerSpan">Add a new controller</span>
+    );
   }
 }
 

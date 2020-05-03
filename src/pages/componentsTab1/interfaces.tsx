@@ -1,8 +1,8 @@
 export interface controllerIFace {
   uuid: any,
-  ip: String;
+  ip: string;
   port: number;
-  name: String;
+  name: string;
   ledState: {
     isOn: boolean;
     pColor: number[];

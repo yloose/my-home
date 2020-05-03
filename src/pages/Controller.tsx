@@ -14,9 +14,9 @@ import {
 import LEDController from "./componentsTab1/LEDController";
 import AddController from "./componentsTab1/AddController";
 
-import "./Tab1.css";
+import "./Controller.css";
 
-const Tab1: React.FC = () => {
+const Controller: React.FC = () => {
   let ledControllerRef = useRef<LEDController>(null);
 
   const [showNetworkErrorToast, setNetworkErrorToast] = useState(false);
@@ -89,4 +89,4 @@ const Tab1: React.FC = () => {
   );
 };
 
-export default Tab1;
+export default Controller;

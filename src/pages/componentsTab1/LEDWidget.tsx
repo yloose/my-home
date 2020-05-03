@@ -10,7 +10,8 @@ import {
   IonSelectOption,
   IonRange,
   IonLabel,
-  IonPopover
+  IonPopover,
+  IonAlert
 } from "@ionic/react";
 import { ChromePicker } from "react-color";
 
@@ -20,16 +21,61 @@ interface Props {
   controller: controllerIFace;
   uuid: string;
   pushData: Function;
+  deleteController: Function;
 }
 
 const LEDWidget: React.FC<Props> = props => {
   const [showpColorPopover, setpColorPopover] = useState(false);
   const [showsColorPopover, setsColorPopover] = useState(false);
+  const [deleteDialog, setDeleteDialog] = useState(false);
 
   return (
     <IonCard>
+      <IonAlert
+        isOpen={deleteDialog}
+        onDidDismiss={() => setDeleteDialog(false)}
+        header={"Delete?"}
+        subHeader={"Controller: " + props.controller.name}
+        message={"Do you really want to delete this controller?"}
+        buttons={[
+          { text: "Cancel", handler: () => setDeleteDialog(false) },
+          {
+            text: "Yes",
+            handler: () => {
+              props.deleteController();
+              setDeleteDialog(false);
+            }
+          }
+        ]}
+      />
       <IonCardHeader>
-        <IonCardSubtitle>LED Widget</IonCardSubtitle>
+        <IonCardSubtitle>
+          LED Widget
+          <div
+            className="deleteControllerWrapper"
+            onClick={() => setDeleteDialog(true)}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+              focusable="false"
+              width="1.5em"
+              height="1.5em"
+              style={{
+                msTransform: "rotate(360deg)",
+                WebkitTransform: "rotate(360deg)",
+                transform: "rotate(360deg)"
+              }}
+              preserveAspectRatio="xMidYMid meet"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M19 4h-3.5l-1-1h-5l-1 1H5v2h14M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12z"
+                fill="#626262"
+              />
+            </svg>
+          </div>
+        </IonCardSubtitle>
         <IonCardTitle>
           {props.controller.name}
           <IonToggle
@@ -136,7 +182,9 @@ const LEDWidget: React.FC<Props> = props => {
             >
               {props.controller.effects.map((effect, index) => {
                 return (
-                  <IonSelectOption value={index}>{effect}</IonSelectOption>
+                  <IonSelectOption key={index} value={index}>
+                    {effect}
+                  </IonSelectOption>
                 );
               })}
             </IonSelect>

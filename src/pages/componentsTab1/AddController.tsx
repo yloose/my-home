@@ -24,7 +24,6 @@ interface Props {
 
 const AddController: React.FC<Props> = props => {
   const [showAddErrorToast, setAddErrorToast] = useState(false);
-  const [showAddSuccessToast, setAddSuccessToast] = useState(false);
 
   let formSubmit = (e: any) => {
     e.preventDefault();
@@ -35,7 +34,7 @@ const AddController: React.FC<Props> = props => {
       let newController = {
         uuid: uuidv4(),
         ip: formData[1].value,
-        port: formData[2].value,
+        port: parseInt(formData[2].value),
         name: formData[0].value,
         ledState: {
           isOn: false,
@@ -46,11 +45,11 @@ const AddController: React.FC<Props> = props => {
         },
         effects: []
       };
+
       // DataInterface.setController([newController]).then(() => console.log("SUCCESS!"));
       DataInterface.addController(newController).then(() => {
-        setAddSuccessToast(true);
         props.refreshController()
-        props.close();
+        props.close(false);
       })
     } else {
       setAddErrorToast(true);
@@ -116,13 +115,6 @@ const AddController: React.FC<Props> = props => {
         onDidDismiss={() => setAddErrorToast(false)}
         message="Error occured while adding device."
         duration={2000}
-      />
-      <IonToast
-        color="succes"
-        isOpen={showAddSuccessToast}
-        onDidDismiss={() => setAddSuccessToast(false)}
-        message="Device added successfully."
-        duration={1000}
       />
     </IonPage>
   );

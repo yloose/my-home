@@ -6,7 +6,6 @@ const { Storage } = Plugins;
 class DataInterface {
   static async getController() {
     const controller = await Storage.get({ key: "LedController" });
-    console.log(controller);
     if (controller.value) {
       return JSON.parse(controller.value);
     } else {
@@ -22,14 +21,24 @@ class DataInterface {
   }
 
   static async addController(controllerToAdd: controllerIFace) {
-    this.getController().then(controller => {
+    await this.getController().then(controller => {
       if (controller) {
-        let controllerNew = controller.push(controllerToAdd);
-        this.setController(controllerNew).then(() => {
-          return true;
-        });
+        controller.push(controllerToAdd);
+      } else {
+        controller = [controllerToAdd];
       }
+      this.setController(controller).then(() => {
+        return true;
+      });
     });
+  }
+
+  static async deleteController(uuid: string) {
+    let controller = await this.getController();
+    let controllerNew = controller.filter((controllerSingle: controllerIFace) => (
+      controllerSingle.uuid !== uuid
+    ));
+    await this.setController(controllerNew);
   }
 }
 
