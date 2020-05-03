@@ -6,7 +6,7 @@ Currently only working WLED project support for other devices will be added over
 
 ## Installation
 
-(You still have to compile manually, a ready-to-install will provided in the future)
+(You still have to compile manually, a ready-to-install apk will provided in the future)
 
 1. Clone the repo
 2. Navigate into the direcoty and run
